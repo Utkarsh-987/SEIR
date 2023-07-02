@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jun 24 17:04:20 2023
-
-@author: alfas
+If libraries are missing. Run these commands on your notebook 
+for google colab following install the following libraries
+  !pip install torch_geometric --quiet
+  !pip install dfutils --quiet
+  !pip install ete3 --quiet
+  !pip install funcy --quiet
 """
 
 import warnings
