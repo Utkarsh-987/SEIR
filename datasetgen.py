@@ -96,6 +96,17 @@ g = sbm(n_comms=communes, node_comms=node_comms,
 g = sfcomm(n=nodes, c=communes, k=avg_deg, p=rw_prob)
 #------------------------------------------------------------------------------#
 
+# Class to save a generated dataset as an object in pickle
+class Dataset:
+  def __init__(self,g,x,params,epi_params,net_name,combo_class):
+    self.Network_adj_matrix = nx.adjacency_matrix(g).toarray()
+    self.Population_adj_matrix = x
+    # self.Network_Parameters = epi_params
+    self.Epidemic_Parameters = {'Contact Days':params['cd'],'Exposed Days':params['ed'],'Infected Days':params['id'],
+                                'Recovery Days':params['rd'],'Initial Infections':params['ii']}
+    self.Network_name = net_name
+    self.Combination_class = cname 
+    
 # data generation for ER network
 
 # 16 possible combos
@@ -129,5 +140,7 @@ for comb in combos:
         df = seirs_ne(g, T, params, extra='node')
         # one hot encoding 
         x = state_ohe(df)
-        
+        D = Dataset(g,x,params,avg_deg,'BA Network',cname)
+        with open('BA Dataset.pickle','ab') as f:
+          my_pickle = pickle.dump(D,f)
         # save x, g as adj matrix, network name, params, epidemic params, combo class
