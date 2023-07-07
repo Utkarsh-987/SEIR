@@ -140,7 +140,6 @@ for comb in combos:
     edcap = np.linspace(*ed_space[comb[1]], divide)
     rdcap = np.linspace(*rd_space[comb[2]], divide)
     ircap = np.linspace(*ir_space[comb[3]], divide)
-    print(cname,idcap,edcap)
     # iterate over params and do simulation
     for i,j,k,l in product(idcap, edcap, rdcap, ircap):
         # average contact time of an edge
