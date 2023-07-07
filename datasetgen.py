@@ -21,7 +21,7 @@ import networkx as nx
 from torch_geometric.data import Data
 
 from seirsnt import seirs_ne
-from dfutils import state_ohe
+# from dfutils import state_ohe // this is missing so I have created a custom ohe
 from netmodels import panwat, swtl, chunglusf, sbm, sfcomm
 #------------------------------------------------------------------------------#
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
@@ -107,6 +107,20 @@ class Dataset:
     self.Network_name = net_name
     self.Combination_class = cname 
     
+# Code for one_hot_encoding
+def one_hot_encode(variable):
+    encoding = {
+        'sus': '000',
+        'exp': '001',
+        'inf': '010',
+        'rec': '100'
+    }
+
+    if variable in encoding:
+        return encoding[variable]
+    else:
+        return '0000'  # Default encoding for unknown values
+
 # data generation for ER network
 
 # 16 possible combos
@@ -139,7 +153,7 @@ for comb in combos:
         # do SEIRS sim
         df = seirs_ne(g, T, params, extra='node')
         # one hot encoding 
-        x = state_ohe(df)
+        x = df.applymap(one_hot_encode)
         D = Dataset(g,x,params,avg_deg,'BA Network',cname)
         with open('BA Dataset.pickle','ab') as f:
           my_pickle = pickle.dump(D,f)
