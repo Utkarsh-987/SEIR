@@ -4,7 +4,6 @@
 If libraries are missing. Run these commands on your notebook 
 for google colab following install the following libraries
   !pip install torch_geometric --quiet
-  !pip install dfutils --quiet
   !pip install ete3 --quiet
   !pip install funcy --quiet
 """
@@ -20,8 +19,7 @@ import pandas as pd
 import networkx as nx
 from torch_geometric.data import Data
 
-from seirsnt import seirs_ne
-# from dfutils import state_ohe // this is missing so I have created a custom ohe
+from seirsnt import seirs_ne, state_ohe
 from netmodels import panwat, swtl, chunglusf, sbm, sfcomm
 #------------------------------------------------------------------------------#
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
@@ -152,7 +150,7 @@ for comb in combos:
         # do SEIRS sim
         df = seirs_ne(g, T, params, extra='node')
         # one hot encoding 
-        x = df.applymap(one_hot_encode)
+        x = state_ohe(df)
         D = Dataset(g,x,params,avg_deg,'BA Network',cname)
         with open('BA Dataset.pickle','ab') as f:
           my_pickle = pickle.dump(D,f)
