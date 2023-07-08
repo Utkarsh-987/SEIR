@@ -173,3 +173,23 @@ def seirs_ne(g, T, params, extra=None):
     stats = stats.reset_index()
     stats = stats.rename(columns={'index':'day'})
     return stats
+
+
+# disease states
+states =  ['sus', 'exp', 'inf', 'rec']
+
+# convert node level state data into one hot encoded
+def state_ohe(df):
+  # Create a list of all the column names.
+  cols = df.columns.tolist()
+
+  # Create a new dataframe with 400 columns.
+  new_df = pd.DataFrame()
+
+  # For each column in the original dataframe, 
+  # create four new columns in the new dataframe.
+  for col in cols:
+    for state in states:
+      new_df[str(col) + state] = (df[col] == state).astype(int)
+
+  return new_df
