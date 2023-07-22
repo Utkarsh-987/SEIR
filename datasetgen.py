@@ -17,6 +17,7 @@ import torch
 import numpy as np
 import pandas as pd
 import networkx as nx
+import random as rd
 from torch_geometric.data import Data
 
 from seirsnt import seirs_ne, state_ohe
@@ -95,63 +96,48 @@ g = sfcomm(n=nodes, c=communes, k=avg_deg, p=rw_prob)
 #------------------------------------------------------------------------------#
 
 # Class to save a generated dataset as an object in pickle
-class Dataset:
+class Epidata:
   def __init__(self,g,x,params,epi_params,net_name,combo_class):
-    self.Network_adj_matrix = nx.adjacency_matrix(g).toarray()
-    self.Population_adj_matrix = x
-    # self.Network_Parameters = epi_params
+    self.adj = nx.adjacency_matrix(g).toarray()
+    self.data = x
     self.Epidemic_Parameters = {'Contact Days':params['cd'],'Exposed Days':params['ed'],'Infected Days':params['id'],
                                 'Recovery Days':params['rd'],'Initial Infections':params['ii']}
-    self.Network_name = net_name
-    self.Combination_class = cname 
-    
-# Code for one_hot_encoding
-def one_hot_encode(variable):
-    encoding = {
-        'sus': '000',
-        'exp': '001',
-        'inf': '010',
-        'rec': '100'
-    }
-
-    if variable in encoding:
-        return encoding[variable]
-    else:
-        return '0000'  # Default encoding for unknown values
-
+    self.net_name = net_name
+    self.cname = combo_class
 # data generation for ER network
-
 # 16 possible combos
 combos = list(product([0, 1], repeat=4))
-
 # iterate over combinations
+# save data
+cdata = []
 for comb in combos:
     # print combo name
     cname = ''.join([str(d) for d in comb])
     # print(datetime.now(), cname)
-    
-    # save data
-    # cdata = []
-    
-    # get seirs param ranges for the combo
-    idcap = np.linspace(*id_space[comb[0]], divide)
-    edcap = np.linspace(*ed_space[comb[1]], divide)
-    rdcap = np.linspace(*rd_space[comb[2]], divide)
-    ircap = np.linspace(*ir_space[comb[3]], divide)
-    # iterate over params and do simulation
-    for i,j,k,l in product(idcap, edcap, rdcap, ircap):
-        # average contact time of an edge
-        cd = round(1/l, 2)
-        # all parameters
-        params = {'id':i, 'ed':j, 'rd':k,'ir':l, 'cd':cd, 'ii':init_inf}
-        
-        # generate network
-        g = nx.gnp_random_graph(n=nodes, p=linkp)
-        # do SEIRS sim
-        df = seirs_ne(g, T, params, extra='node')
-        # one hot encoding 
-        x = state_ohe(df)
-        D = Dataset(g,x,params,avg_deg,'BA Network',cname)
-        with open('BA Dataset.pickle','ab') as f:
-          my_pickle = pickle.dump(D,f)
+
+    # get seirs param rages for the combo
+    for n in range(12):
+          idcap = rd.randint(*id_space[comb[0]])
+          edcap = rd.randint(*ed_space[comb[1]])
+          rdcap = rd.randint(*rd_space[comb[2]])
+          ircap = rd.uniform(*ir_space[comb[3]])
+
+          # iterate over params and do simulation
+          i,j,k,l = (idcap, edcap, rdcap, ircap)
+          # average contact time of an edge
+          cd = round(1/l, 2)
+          # all parameters
+          params = {'id':i, 'ed':j, 'rd':k,'ir':l, 'cd':cd, 'ii':init_inf}
+          # generate network
+          g = nx.gnp_random_graph(n=nodes, p=linkp)
+          # do SEIRS sim
+          df = seirs_ne(g, T, params, extra='node')
+          # one hot encoding
+          x = state_ohe(df)
+          D = Epidata(g,x,params,avg_deg,"ER Network",cname)
+          cdata.append(D)
+with open("ER Dataset.pickle",'ab') as file:
+  my_pickle = pickle.dump(cdata,file)
         # save x, g as adj matrix, network name, params, epidemic params, combo class
+# Link of google colab to run and download dataset for all six network
+# https://colab.research.google.com/drive/17J7gb2Sfj3ZalLZcC1vH5sv_gl3842g_?usp=sharing
